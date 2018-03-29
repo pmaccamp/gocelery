@@ -5,7 +5,7 @@ import (
 )
 
 func GetUuidString() string {
-	uuid, error := uuid.NewV4()
+	uuid, _ := uuid.NewV4()
 
 	return uuid.String();
 }
