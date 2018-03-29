@@ -7,8 +7,6 @@ import (
 	"reflect"
 	"testing"
 	"time"
-
-	uuid "github.com/satori/go.uuid"
 )
 
 func multiply(a int, b int) int {

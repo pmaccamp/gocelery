@@ -7,8 +7,6 @@ import (
 	"reflect"
 	"sync"
 	"time"
-
-	"github.com/satori/go.uuid"
 )
 
 // CeleryMessage is actual message to be sent to Redis

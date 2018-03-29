@@ -6,8 +6,6 @@ import (
 	"math/rand"
 	"reflect"
 	"testing"
-
-	"github.com/satori/go.uuid"
 )
 
 func getBackends() []CeleryBackend {

@@ -4,8 +4,6 @@ import (
 	"math/rand"
 	"testing"
 	"time"
-
-	"github.com/satori/go.uuid"
 )
 
 // add is test task method
