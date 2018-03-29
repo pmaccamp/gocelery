@@ -90,10 +90,10 @@ func TestWorkerClient(t *testing.T) {
 
 	for i := 0; i < 2; i++ {
 
-		kwargTaskName := uuid.NewV4().String()
+		kwargTaskName := GetUuidString()
 		kwargTask := &multiplyKwargs{}
 
-		argTaskName := uuid.NewV4().String()
+		argTaskName := GetUuidString()
 		argTask := multiply
 
 		for j := 0; j < 2; j++ {
@@ -170,7 +170,7 @@ func TestRegister(t *testing.T) {
 		t.Errorf("failed to create CeleryClients: %v", err)
 		return
 	}
-	taskName := uuid.NewV4().String()
+	taskName := GetUuidString()
 
 	for _, celeryClient := range celeryClients {
 		celeryClient.Register(taskName, multiply)

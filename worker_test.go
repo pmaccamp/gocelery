@@ -53,7 +53,7 @@ func TestRunTask(t *testing.T) {
 
 	// construct task message
 	taskMessage := &TaskMessage{
-		ID:      uuid.NewV4().String(),
+		ID:      GetUuidString(),
 		Task:    taskName,
 		Args:    args,
 		Kwargs:  nil,
