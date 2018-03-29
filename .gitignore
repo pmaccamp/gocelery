@@ -26,3 +26,5 @@ _testmain.go
 *.pyc
 
 coverage.out
+
+.idea
