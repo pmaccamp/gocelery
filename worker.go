@@ -2,10 +2,34 @@ package gocelery
 
 import (
 	"fmt"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"reflect"
 	"sync"
+	"time"
 )
+
+var mutex sync.Mutex
+var activeTasks int
+
+func incrementActiveTasks() {
+	mutex.Lock()
+	defer mutex.Unlock()
+	activeTasks += 1
+	log.Info(activeTasks)
+}
+
+func decrementActiveTasks() {
+	mutex.Lock()
+	defer mutex.Unlock()
+	activeTasks -= 1
+	log.Info(activeTasks)
+}
+
+func GetActiveTasks() (int) {
+	mutex.Lock()
+	defer mutex.Unlock()
+	return activeTasks
+}
 
 // CeleryWorker represents distributed task worker
 type CeleryWorker struct {
@@ -15,6 +39,7 @@ type CeleryWorker struct {
 	registeredTasks map[string]interface{}
 	taskLock        sync.RWMutex
 	stopChannel     chan struct{}
+	gracefulStopChannel     chan struct{}
 	workWG          sync.WaitGroup
 }
 
@@ -32,6 +57,7 @@ func NewCeleryWorker(broker CeleryBroker, backend CeleryBackend, numWorkers int)
 func (w *CeleryWorker) StartWorker() {
 
 	w.stopChannel = make(chan struct{}, 1)
+	w.gracefulStopChannel = make(chan struct{}, 1)
 	w.workWG.Add(w.numWorkers)
 
 	for i := 0; i < w.numWorkers; i++ {
@@ -39,6 +65,13 @@ func (w *CeleryWorker) StartWorker() {
 			defer w.workWG.Done()
 			for {
 				select {
+				case <-w.gracefulStopChannel:
+					if GetActiveTasks() > 0{
+						time.Sleep(1 * time.Second)
+						continue
+					} else{
+						return
+					}
 				case <-w.stopChannel:
 					return
 				default:
@@ -52,7 +85,9 @@ func (w *CeleryWorker) StartWorker() {
 					//log.Printf("WORKER %d task message received: %v\n", workerID, taskMessage)
 
 					// run task
+					incrementActiveTasks() // increment active tasks
 					resultMsg, err := w.RunTask(taskMessage)
+					decrementActiveTasks() // decrement active tasks
 					if err != nil {
 						log.Println(err)
 						continue
@@ -75,6 +110,14 @@ func (w *CeleryWorker) StartWorker() {
 func (w *CeleryWorker) StopWorker() {
 	for i := 0; i < w.numWorkers; i++ {
 		w.stopChannel <- struct{}{}
+	}
+	w.workWG.Wait()
+}
+
+func (w *CeleryWorker) GracefulStopWorker() {
+	log.Info("stop")
+	for i := 0; i < w.numWorkers; i++ {
+		w.gracefulStopChannel <- struct{}{}
 	}
 	w.workWG.Wait()
 }
